@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "awseal"
+version = "0.1.0"
+description = "Sign an artifact so a stranger can verify it — Ed25519 seals over a directory, where the key that verifies is not the key that forges."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    # A HARD dependency, deliberately not optional. A sealing library that
+    # degrades to "signing unavailable, continuing" produces unsigned artifacts
+    # that look sealed, which is the exact failure this package exists to
+    # prevent. If it cannot sign, it must not import.
+    "cryptography>=41.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+awseal = "awseal.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Aitherium/awseal"
+Documentation = "https://github.com/Aitherium/awseal#readme"
+Repository = "https://github.com/Aitherium/awseal.git"
+Issues = "https://github.com/Aitherium/awseal/issues"
+
+[tool.setuptools]
+packages = ["awseal"]
+license-files = ["LICENSE"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

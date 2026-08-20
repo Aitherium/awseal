@@ -1,0 +1,2 @@
+[console_scripts]
+awseal = awseal.cli:main

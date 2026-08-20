@@ -1,0 +1,14 @@
+LICENSE
+README.md
+pyproject.toml
+awseal/__init__.py
+awseal/cli.py
+awseal/digest.py
+awseal/keys.py
+awseal/seal.py
+awseal.egg-info/PKG-INFO
+awseal.egg-info/SOURCES.txt
+awseal.egg-info/dependency_links.txt
+awseal.egg-info/entry_points.txt
+awseal.egg-info/requires.txt
+awseal.egg-info/top_level.txt
