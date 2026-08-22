@@ -22,7 +22,7 @@ import sys
 #: package cannot read the registry, and a doctor that guessed at the family
 #: would go stale in silence. Regenerate to update.
 SELF = 'awseal'
-FAMILY = ['awbac', 'awbrowse', 'awdit', 'awfind', 'awgit', 'awgraph', 'awiam', 'awkno', 'awm', 'awmail', 'awnboard', 'awnest', 'awnet', 'awprism', 'awreason', 'awrecover', 'awrecurse', 'awrelay', 'awrepl', 'awresearch', 'awrun', 'awshare', 'awtunnel']
+FAMILY = ['awbac', 'awbrowse', 'awdit', 'awfind', 'awgit', 'awgraph', 'awiam', 'awkno', 'awm', 'awmail', 'awnboard', 'awnest', 'awnet', 'awnode', 'awprism', 'awreason', 'awrecover', 'awrecurse', 'awrelay', 'awrepl', 'awresearch', 'awrun', 'awshare', 'awtunnel']
 PAIRS_WITH = ['awdit', 'awshare']
 
 
