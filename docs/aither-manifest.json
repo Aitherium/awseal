@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1",
+  "name": "awseal",
+  "description": "Sign an artifact so a stranger can verify it.",
+  "url": "https://aitherium.github.io/awseal/",
+  "repository": "https://github.com/Aitherium/awseal",
+  "kind": "tool",
+  "status": "public",
+  "adopt": "Sign one release file and hand someone the verify command.",
+  "pairs_with": [
+    "awshare",
+    "awdit"
+  ],
+  "includes": [],
+  "metrics": {
+    "files": {
+      "value": 15,
+      "as_of": "2026-08-22T18:47:19-07:00"
+    },
+    "tests": {
+      "value": 1,
+      "as_of": "2026-08-22T18:47:19-07:00"
+    }
+  }
+}
