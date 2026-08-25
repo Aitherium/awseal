@@ -9,17 +9,18 @@
   "adopt": "Sign one release file and hand someone the verify command.",
   "pairs_with": [
     "awshare",
-    "awdit"
+    "awdit",
+    "awrena"
   ],
   "includes": [],
   "metrics": {
     "files": {
-      "value": 15,
-      "as_of": "2026-08-22T18:47:19-07:00"
+      "value": 18,
+      "as_of": "2026-08-25T06:17:51-07:00"
     },
     "tests": {
       "value": 1,
-      "as_of": "2026-08-22T18:47:19-07:00"
+      "as_of": "2026-08-25T06:17:51-07:00"
     }
   }
 }
