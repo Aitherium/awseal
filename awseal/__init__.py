@@ -34,7 +34,7 @@ from .keys import generate as keygen
 from .keys import load_private_key, load_public_key, public_key_hex
 from .seal import SEAL_NAME, SEAL_VERSION, Seal, load, sign, verify, write
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "SEAL_NAME",
