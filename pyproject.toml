@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "awseal"
-version = "0.1.0"
+version = "0.1.1"
 description = "Sign an artifact so a stranger can verify it — Ed25519 seals over a directory, where the key that verifies is not the key that forges."
 readme = "README.md"
 requires-python = ">=3.10"
