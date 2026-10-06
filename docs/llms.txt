@@ -1,0 +1,32 @@
+# awseal
+
+> Sign an artifact so a stranger can verify it.
+
+"Download this and run it" is a request for trust with nothing behind it.
+
+## Install
+
+```
+pip install awseal
+```
+
+## Use it in 30 seconds
+
+Sign one release file and hand someone the verify command.
+
+## Composes with
+
+- [awshare](https://aitherium.github.io/awshare/) — Publish an artifact and fetch it back verified.
+- [awdit](https://aitherium.github.io/awdit/) — An append-only audit trail whose gaps are DETECTABLE.
+- [awrena](https://aitherium.github.io/awrena/) — Put two agents head to head and get a verdict you can check.
+- [awrtifact](https://aitherium.github.io/awrtifact/) — Deliberately chunk artifacts into GitHub release assets — the productized aitherkvcache mirror lane.
+
+## Where it lives
+
+- Repo: https://github.com/Aitherium/awseal
+- Docs: https://aitherium.github.io/awseal/
+- Manifest (keys + the one-line adoption story): https://aitherium.github.io/awseal/aither-manifest.json
+
+This repository is mirrored from the AitherOS monorepo by `.github/workflows/sync-awseal.yml`; hand edits made here are overwritten on the next sync — change the source instead.
+
+Everything Aitherium, in one file for agents: https://aitherium.com/llms.txt
