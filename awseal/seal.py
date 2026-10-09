@@ -127,6 +127,14 @@ def load(root: Path) -> Seal:
         d = json.loads(target.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise SealError(f"cannot read {target}: {exc}") from exc
+    return from_dict(d, where=str(target))
+
+
+def from_dict(d: Dict[str, Any], *, where: str = "seal") -> Seal:
+    """Parse a seal document held in memory. Same refusals as `load`."""
+    target = where
+    if not isinstance(d, dict):
+        raise SealError(f"{target} is not a seal document")
     version = d.get("version")
     if version != SEAL_VERSION:
         raise SealError(
@@ -185,6 +193,65 @@ def verify(root: Path, *, expect_key: Optional[str] = None) -> Dict[str, Any]:
     if expect_key is not None:
         result["key_trusted"] = (seal.public_key == expect_key.strip().lower())
 
+    result["ok"] = bool(result["signature_ok"] and result["content_ok"]
+                        and (result["key_trusted"] is not False))
+    return result
+
+
+def sign_files(files: Dict[str, str], *, key_path: Optional[Path] = None,
+               subject: str = "", meta: Optional[Dict[str, Any]] = None) -> Seal:
+    """Seal a `{posix path: sha256}` map that is not a directory on this disk.
+
+    For content that is described by digests and stored elsewhere -- a snapshot
+    manifest whose objects live in an object store. The seal is the same document
+    `sign` produces, so it verifies against the restored directory with `verify`
+    once that directory is written, and against the map with `verify_files`.
+    """
+    if not isinstance(files, dict) or not files:
+        raise SealError("refusing to seal an empty file map: a valid signature over "
+                        "nothing")
+    for path, digest in files.items():
+        d = str(digest)
+        if len(d) != 64 or any(c not in "0123456789abcdef" for c in d):
+            raise SealError(f"{path!r}: {digest!r} is not a sha256 hex digest")
+    private = _keys.load_private_key(key_path)
+    clean = {str(k): str(v) for k, v in files.items()}
+    seal = Seal(
+        version=SEAL_VERSION,
+        tree_digest=tree_digest(clean),
+        files=clean,
+        public_key=_keys.public_key_hex(private),
+        signature="",
+        created=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        subject=subject,
+        meta=dict(meta or {}),
+    )
+    seal.signature = private.sign(canonical(seal.payload())).hex()
+    return seal
+
+
+def verify_files(seal: Seal, files: Dict[str, str], *,
+                 expect_key: Optional[str] = None) -> Dict[str, Any]:
+    """`verify`, against a file map instead of a directory: the same three answers."""
+    result: Dict[str, Any] = {
+        "subject": seal.subject, "created": seal.created,
+        "public_key": seal.public_key, "signature_ok": False, "content_ok": False,
+        "key_trusted": None, "diff": {"added": [], "removed": [], "modified": []},
+    }
+    try:
+        pub = _keys.load_public_key(seal.public_key)
+        pub.verify(bytes.fromhex(seal.signature), canonical(seal.payload()))
+        result["signature_ok"] = True
+    except SealError:
+        raise
+    except Exception:  # noqa: BLE001 - any failure is a failed verification
+        result["signature_ok"] = False
+    actual = {str(k): str(v) for k, v in dict(files or {}).items()}
+    result["content_ok"] = (tree_digest(actual) == seal.tree_digest
+                            and tree_digest(seal.files) == seal.tree_digest)
+    result["diff"] = diff(seal.files, actual)
+    if expect_key is not None:
+        result["key_trusted"] = (seal.public_key == expect_key.strip().lower())
     result["ok"] = bool(result["signature_ok"] and result["content_ok"]
                         and (result["key_trusted"] is not False))
     return result

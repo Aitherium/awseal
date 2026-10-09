@@ -32,9 +32,20 @@ from __future__ import annotations
 from .digest import SealError, diff, digest_tree, file_digest, tree_digest
 from .keys import generate as keygen
 from .keys import load_private_key, load_public_key, public_key_hex
-from .seal import SEAL_NAME, SEAL_VERSION, Seal, load, sign, verify, write
+from .seal import (
+    SEAL_NAME,
+    SEAL_VERSION,
+    Seal,
+    from_dict,
+    load,
+    sign,
+    sign_files,
+    verify,
+    verify_files,
+    write,
+)
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "SEAL_NAME",
@@ -44,13 +55,16 @@ __all__ = [
     "diff",
     "digest_tree",
     "file_digest",
+    "from_dict",
     "keygen",
     "load",
     "load_private_key",
     "load_public_key",
     "public_key_hex",
     "sign",
+    "sign_files",
     "tree_digest",
     "verify",
+    "verify_files",
     "write",
 ]
