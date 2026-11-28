@@ -160,3 +160,25 @@ def test_canonical_is_stable_across_key_order(tmp_path: Path) -> None:
     a = _seal.canonical({"b": 2, "a": 1})
     b = _seal.canonical({"a": 1, "b": 2})
     assert a == b
+
+
+def test_symlinks_escaping_root_are_refused(tmp_path: Path, keyfile: Path) -> None:
+    """Symlink files and symlink directories must fail closed with SealError."""
+    outside = tmp_path / "secret.txt"
+    outside.write_text("SECRET", encoding="utf-8")
+    outside_dir = tmp_path / "outside_dir"
+    outside_dir.mkdir()
+    (outside_dir / "x.txt").write_text("X", encoding="utf-8")
+
+    root = tmp_path / "bundle"
+    root.mkdir()
+    (root / "ok.txt").write_text("ok", encoding="utf-8")
+    (root / "leak.txt").symlink_to(outside)
+    with pytest.raises(_digest.SealError, match="symlink"):
+        _seal.sign(root, key_path=keyfile)
+
+    (root / "leak.txt").unlink()
+    (root / "dir_link").symlink_to(outside_dir)
+    with pytest.raises(_digest.SealError, match="symlink"):
+        _seal.sign(root, key_path=keyfile)
+

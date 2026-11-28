@@ -39,8 +39,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Dict, Iterable, Iterator
 
 #: Read size. Large files are streamed rather than loaded — a sealed artifact is
 #: routinely a multi-GB adapter, and a digest tool that needs the file in RAM is
@@ -75,15 +76,44 @@ def file_digest(path: Path) -> str:
 def walk_files(root: Path, excludes: Iterable[str] = DEFAULT_EXCLUDES) -> Iterator[Path]:
     """Every sealable file under `root`, deterministically ordered."""
     ex = set(excludes)
-    if not root.is_dir():
+    if root.is_symlink() or not root.is_dir():
         raise SealError(f"{root} is not a directory")
+    root_resolved = root.resolve()
     out = []
-    for p in root.rglob("*"):
-        if not p.is_file():
-            continue
-        if ex & set(p.relative_to(root).parts):
-            continue
-        out.append(p)
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        dp = Path(dirpath)
+        kept_dirs = []
+        for dname in sorted(dirnames):
+            if dname in ex:
+                continue
+            cand_dir = dp / dname
+            if cand_dir.is_symlink():
+                raise SealError(
+                    f"symlink directory is not allowed in sealed tree: "
+                    f"{cand_dir.relative_to(root).as_posix()}"
+                )
+            kept_dirs.append(dname)
+        dirnames[:] = kept_dirs
+        for fname in sorted(filenames):
+            if fname in ex:
+                continue
+            cand = dp / fname
+            if cand.is_symlink():
+                raise SealError(
+                    f"symlink file is not allowed in sealed tree: "
+                    f"{cand.relative_to(root).as_posix()}"
+                )
+            try:
+                resolved = cand.resolve()
+            except OSError as exc:
+                raise SealError(f"cannot resolve {cand}: {exc}") from exc
+            if not resolved.is_relative_to(root_resolved):
+                raise SealError(
+                    f"path resolves outside sealed root: "
+                    f"{cand.relative_to(root).as_posix()}"
+                )
+            if cand.is_file():
+                out.append(cand)
     # Sort on the POSIX relative path, not the native one: sorting on native
     # paths orders differently across platforms and silently produces a
     # different tree digest for identical content.
@@ -91,7 +121,7 @@ def walk_files(root: Path, excludes: Iterable[str] = DEFAULT_EXCLUDES) -> Iterat
     return iter(out)
 
 
-def file_map(root: Path, excludes: Iterable[str] = DEFAULT_EXCLUDES) -> Dict[str, str]:
+def file_map(root: Path, excludes: Iterable[str] = DEFAULT_EXCLUDES) -> dict[str, str]:
     """`{posix relative path: sha256}` for every file under `root`."""
     files = {p.relative_to(root).as_posix(): file_digest(p)
              for p in walk_files(root, excludes)}
@@ -105,7 +135,7 @@ def file_map(root: Path, excludes: Iterable[str] = DEFAULT_EXCLUDES) -> Dict[str
     return files
 
 
-def tree_digest(files: Dict[str, str]) -> str:
+def tree_digest(files: dict[str, str]) -> str:
     """One digest over the whole `{path: hash}` map.
 
     Canonical JSON with sorted keys and no insignificant whitespace, so the
@@ -122,7 +152,7 @@ def digest_tree(root: Path, excludes: Iterable[str] = DEFAULT_EXCLUDES):
     return files, tree_digest(files)
 
 
-def diff(expected: Dict[str, str], actual: Dict[str, str]) -> Dict[str, list]:
+def diff(expected: dict[str, str], actual: dict[str, str]) -> dict[str, list]:
     """What changed between two file maps.
 
     Verification must be able to SAY what broke. "Signature invalid" sends a
